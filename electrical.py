@@ -58,6 +58,8 @@ def analyze_circuit(voltage_v, circuit):
 
 
 def analyze_dc(voltage_v, resistance_ohm):
+    if resistance_ohm <= 0:
+        raise ValueError("Resistance must be a positive finite number.")
     result = analyze_circuit(voltage_v, {"name": "R1", "resistance_ohm": resistance_ohm})
     return {"current_a": result["current_a"], "power_w": result["power_w"]}
 
