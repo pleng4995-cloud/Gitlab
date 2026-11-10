@@ -57,5 +57,20 @@ class TestCompute(unittest.TestCase):
         self.assertIn("saturation", body)
 
 
+class TestCrossCheck(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+
+    def test_valid_post_shows_two_methods_and_ok(self):
+        body = self.client.post("/", data=VALID).get_data(as_text=True)
+        self.assertIn("Nodal", body)
+        self.assertIn("OK", body)
+        self.assertIn("Δ", body)
+
+    def test_cutoff_shows_not_applicable(self):
+        body = self.client.post("/", data={**VALID, "vbe": "5"}).get_data(as_text=True)
+        self.assertIn("n/a", body)
+
+
 if __name__ == "__main__":
     unittest.main()
