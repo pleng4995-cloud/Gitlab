@@ -20,7 +20,7 @@
 - UI copy in Thai; engineering symbols stay Latin (`VCC`, `IB`, `VCE`, `cutoff`/`active`/`saturation`).
 - Scope is DC bias only: no AC, Bode, transient, function generator, circuit editor, or decorative UI.
 - Field names, everywhere (form, dataclass, errors): `vcc, r1, r2, rc, re, beta, vbe`.
-- Reference values for the default inputs, used by every task: `VBB=2.105263158 V`, `RB=8245.614035 Ω`, `IB=8.8245e-06 A`, `IC=1.32368e-03 A`, `IE=1.33250e-03 A`, `VE=1.33250 V`, `VC=5.77871 V`, `VCE=4.44621 V`, `VB=2.03250 V`, region `active`.
+- Reference values for the default inputs, used by every task (exact rational arithmetic, not the implementation's output): `VBB=2.1052631578947367 V`, `RB=8245.61403508772 Ω`, `IB=8.824501487275531e-06 A`, `IC=1.3236752230913298e-03 A`, `IE=1.3324997245786052e-03 A`, `VE=1.3324997245786052 V`, `VC=5.77872645147075 V`, `VCE=4.446226726892145 V`, `VB=2.032499724578605 V`, region `active`.
 
 ## Review Focus
 
@@ -250,8 +250,10 @@ CASES = [
 class TestNodal(unittest.TestCase):
     def test_matches_hand_worked_reference(self):
         op = nodal_operating_point(CASES[0])
-        expected = {"ib": 8.8245e-06, "ic": 1.32368e-03, "ie": 1.33250e-03,
-                    "vb": 2.03250, "vc": 5.77871, "ve": 1.33250, "vce": 4.44621}
+        expected = {"ib": 8.824501487275531e-06, "ic": 0.0013236752230913298,
+                    "ie": 0.0013324997245786052, "vb": 2.032499724578605,
+                    "vc": 5.77872645147075, "ve": 1.3324997245786052,
+                    "vce": 4.446226726892145}
         for key, value in expected.items():
             self.assertTrue(math.isclose(op[key], value, rel_tol=1e-6),
                             f"{key}: {op[key]} != {value}")

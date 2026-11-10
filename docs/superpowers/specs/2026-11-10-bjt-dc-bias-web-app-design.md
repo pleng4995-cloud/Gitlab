@@ -191,12 +191,17 @@ explanations.
   VBE=0.7`, stored to full precision so the tolerance is not fighting rounding:
 
   ```
-  VBB = 2.105263158 V     RB = 8245.614035 Ω
-  IB  = 8.8245e-06 A      IC = 1.32368e-03 A
-  IE  = 1.33250e-03 A     VE = 1.33250 V
-  VC  = 5.77871 V         VCE = 4.44621 V
-  VB  = 2.03250 V         region = active
+  VBB = 2.1052631578947367 V   RB  = 8245.61403508772 Ω
+  IB  = 8.824501487275531e-06 A
+  IC  = 1.3236752230913298e-03 A
+  IE  = 1.3324997245786052e-03 A
+  VE  = 1.3324997245786052 V   VB  = 2.032499724578605 V
+  VC  = 5.77872645147075 V     VCE = 4.446226726892145 V
+  region = active
   ```
+
+  Derived with exact rational arithmetic (`fractions.Fraction`), independently of
+  both code paths, so the oracle is not a copy of the implementation's output.
 
   Test tolerance is `1e-6` absolute for every quantity, which the published
   precision satisfies with margin.
