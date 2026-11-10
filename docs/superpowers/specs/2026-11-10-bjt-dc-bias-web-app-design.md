@@ -155,6 +155,7 @@ Solve by Gaussian elimination with partial pivoting. No NumPy.
 |-----------|--------|------------------------|
 | `IB <= 0` (i.e. `VBE >= VBB`) | cutoff | "ทรานซิสเตอร์อยู่ในช่วง cutoff (IB ≈ 0)" |
 | `IB > 0` and `VCE < 0.3 V` | saturation | "ทรานซิสเตอร์อยู่ในช่วง saturation (VCE < 0.3 V) ค่า Q-point ใช้เป็นแอมพลิฟายเออร์ไม่ได้" |
+| `IB` or `VCE` not finite (overflow) | invalid | "ค่าผิดปกติ: ผลลัพธ์ไม่ใช่จำนวนจริง (ตรวจสอบค่าอินพุต)" |
 | otherwise | active | none |
 
 `VCE > VCC` is unreachable for valid inputs (`VCE < VCC` whenever `IB > 0`, and

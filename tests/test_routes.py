@@ -56,6 +56,26 @@ class TestCompute(unittest.TestCase):
         body = self.client.post("/", data={**VALID, "rc": "47000"}).get_data(as_text=True)
         self.assertIn("saturation", body)
 
+    def test_truncated_post_reports_missing_field(self):
+        data = {key: value for key, value in VALID.items() if key != "re"}
+        response = self.client.post("/", data=data)
+        body = response.get_data(as_text=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("กรุณากรอกตัวเลข", body)
+
+    def test_vcc_change_moves_the_operating_point(self):
+        first = self.client.post("/", data=VALID).get_data(as_text=True)
+        second = self.client.post("/", data={**VALID, "vcc": "24"}).get_data(as_text=True)
+        self.assertIn("4.446", first)
+        self.assertIn("5.13", second)
+        self.assertNotEqual(first, second)
+
+    def test_vbe_equal_to_vbb_at_route_level_is_cutoff(self):
+        body = self.client.post(
+            "/", data={**VALID, "vbe": "2.1052631578947367"}
+        ).get_data(as_text=True)
+        self.assertIn("cutoff", body)
+
 
 class TestCrossCheck(unittest.TestCase):
     def setUp(self):

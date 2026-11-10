@@ -27,6 +27,11 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(region, "cutoff")
         self.assertEqual(len(warnings), 1)
 
+    def test_non_finite_result_is_flagged(self):
+        region, warnings = classify({"ib": float("nan"), "vce": float("nan")})
+        self.assertEqual(region, "invalid")
+        self.assertEqual(len(warnings), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
