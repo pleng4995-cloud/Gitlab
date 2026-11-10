@@ -1,9 +1,12 @@
 import unittest
 
-from app import app
+from app import _format_resistance, _schematic, app
 
 VALID = {"vcc": "12", "r1": "47000", "r2": "10000", "rc": "4700",
          "re": "1000", "beta": "150", "vbe": "0.7"}
+
+LAB = {"vcc": "12", "r1": "100000", "r2": "22000", "rc": "2200",
+       "re": "1000", "beta": "100", "vbe": "0.7"}
 
 
 class TestFormPage(unittest.TestCase):
@@ -20,7 +23,8 @@ class TestFormPage(unittest.TestCase):
     def test_get_prefills_defaults(self):
         body = self.client.get("/").get_data(as_text=True)
         self.assertIn('value="12"', body)
-        self.assertIn('value="47000"', body)
+        self.assertIn('value="100000"', body)
+        self.assertIn('value="22000"', body)
 
     def test_no_out_of_scope_features_on_page(self):
         body = self.client.get("/").get_data(as_text=True).lower()
@@ -75,6 +79,41 @@ class TestCompute(unittest.TestCase):
             "/", data={**VALID, "vbe": "2.1052631578947367"}
         ).get_data(as_text=True)
         self.assertIn("cutoff", body)
+
+
+class TestLabReference(unittest.TestCase):
+    def setUp(self):
+        self.client = app.test_client()
+
+    def test_lab_values_match_independent_reference(self):
+        body = self.client.post("/", data=LAB).get_data(as_text=True)
+        for expected in ("1.942", "1.242", "9.294", "8.052", "12.3", "1.23"):
+            self.assertIn(expected, body)
+
+    def test_resistance_is_displayed_in_kohm(self):
+        self.assertEqual(_format_resistance(100000), "100 kΩ")
+        self.assertEqual(_format_resistance(2200), "2.2 kΩ")
+        self.assertEqual(_format_resistance(470), "470 Ω")
+
+    def test_schematic_shows_kohm_labels_for_ohm_inputs(self):
+        body = self.client.post("/", data=LAB).get_data(as_text=True)
+        self.assertIn("100 kΩ", body)
+        self.assertIn("22 kΩ", body)
+        self.assertIn("2.2 kΩ", body)
+
+    def test_schematic_falls_back_on_non_numeric_values(self):
+        labels = _schematic({"vcc": "abc", "r1": "abc", "beta": "abc"})
+        self.assertEqual(labels["vcc"], "12 V")
+        self.assertEqual(labels["r1"], "100 kΩ")
+        self.assertEqual(labels["beta"], "100")
+
+    def test_saturation_warning_states_the_approximation(self):
+        body = self.client.post("/", data={**LAB, "rc": "47000"}).get_data(as_text=True)
+        self.assertIn("forward-active approximation", body)
+
+    def test_cutoff_warning_states_the_approximation(self):
+        body = self.client.post("/", data={**LAB, "vbe": "5"}).get_data(as_text=True)
+        self.assertIn("forward-active approximation", body)
 
 
 class TestCrossCheck(unittest.TestCase):

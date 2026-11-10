@@ -33,8 +33,9 @@ place, and the answer must be trustworthy enough to check by hand.
 
 - **No AC analysis, no frequency response, no Bode plot, no function generator,
   no transient/time-domain simulation, no oscilloscope view.**
-- **No decorative UI.** One plain stylesheet, readable typography, no images,
-  animations, icons, or colour themes.
+- No images, animations, JavaScript, or icon libraries. The layout follows the
+  lab mock-up (header, three columns, footer band) with one hand-written
+  stylesheet; the circuit schematic is inline SVG, not an image file.
 - No circuit editor, schematic canvas, drag-and-drop, or component library.
 - No FET/MOSFET, op-amps, or other bias topologies (fixed bias, collector
   feedback, emitter feedback). Only voltage-divider CE bias.
@@ -176,14 +177,32 @@ explanations.
 
 ### 8.6 Web behaviour
 
-- `GET /` renders the form with defaults:
-  `VCC=12, R1=47000, R2=10000, RC=4700, RE=1000, beta=150, VBE=0.7`.
+- `GET /` renders the form with the lab defaults:
+  `VCC=12, R1=100000, R2=22000, RC=2200, RE=1000, beta=100, VBE=0.7`
+  (the lab sheet's 100 kΩ / 22 kΩ / 2.2 kΩ / 1 kΩ entered in Ω).
 - `POST /` validates:
   - invalid → re-render form, HTTP 200, field errors, previous values kept;
   - valid → render results, HTTP 200.
-- Results are formatted to 4 significant figures; currents shown in mA, voltages
-  in V, resistances in Ω/kΩ.
+- Results are formatted to 4 significant figures; voltages in V, currents in mA
+  (µA when below 1 mA), resistances in Ω/kΩ.
+- Inputs are always in Ω. The schematic converts for display
+  (`100000` → `100 kΩ`) with `_format_resistance`, so the kΩ on the lab sheet and
+  the Ω in the form never drift apart.
 - All labels are tied to inputs; error text sits beside the field. No JavaScript.
+
+### 8.7 Page layout
+
+- Header: title "Lab 02: BJT DC Bias Web App", subtitle
+  "ENG29 2121 – Common Emitter (Voltage Divider Bias)", and a course label.
+- Three columns: **Input Parameters** (the form) | **Circuit** (inline SVG with
+  the component values bound to the current inputs) | **DC Bias Results**
+  (VB, VE, VC, VCE, IB, IC, IE and a region badge).
+- Region badge: green for active (`VCE > 0.3 V`), amber for saturation, grey for
+  cutoff, red for invalid. Each badge carries the threshold that produced it.
+- Footer band: the lab's "Week 2 Goal" sentence.
+- The nodal cross-check panel sits below the three columns.
+- Every warning says the result comes from the forward-active approximation
+  (constant β and VBE) and is not a precise simulation.
 
 ## 9. Testing
 

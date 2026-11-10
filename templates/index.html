@@ -1,70 +1,162 @@
 {% extends "base.html" %}
 {% block content %}
-<form method="post">
-  <div class="field">
-    <label for="vcc">VCC (V)</label>
-    <input id="vcc" name="vcc" type="text" inputmode="decimal" value="{{ values.get('vcc', '') }}">
-    <span class="error">{{ errors.get('vcc', '') }}</span>
+<header class="page-header">
+  <div>
+    <h1>Lab 02: BJT DC Bias Web App</h1>
+    <p class="subtitle">ENG29 2121 – Common Emitter (Voltage Divider Bias)</p>
   </div>
-  <div class="field">
-    <label for="r1">R1 (Ω)</label>
-    <input id="r1" name="r1" type="text" inputmode="decimal" value="{{ values.get('r1', '') }}">
-    <span class="error">{{ errors.get('r1', '') }}</span>
-  </div>
-  <div class="field">
-    <label for="r2">R2 (Ω)</label>
-    <input id="r2" name="r2" type="text" inputmode="decimal" value="{{ values.get('r2', '') }}">
-    <span class="error">{{ errors.get('r2', '') }}</span>
-  </div>
-  <div class="field">
-    <label for="rc">RC (Ω)</label>
-    <input id="rc" name="rc" type="text" inputmode="decimal" value="{{ values.get('rc', '') }}">
-    <span class="error">{{ errors.get('rc', '') }}</span>
-  </div>
-  <div class="field">
-    <label for="re">RE (Ω)</label>
-    <input id="re" name="re" type="text" inputmode="decimal" value="{{ values.get('re', '') }}">
-    <span class="error">{{ errors.get('re', '') }}</span>
-  </div>
-  <div class="field">
-    <label for="beta">β</label>
-    <input id="beta" name="beta" type="text" inputmode="decimal" value="{{ values.get('beta', '') }}">
-    <span class="error">{{ errors.get('beta', '') }}</span>
-  </div>
-  <div class="field">
-    <label for="vbe">VBE (V)</label>
-    <input id="vbe" name="vbe" type="text" inputmode="decimal" value="{{ values.get('vbe', '') }}">
-    <span class="error">{{ errors.get('vbe', '') }}</span>
-  </div>
-  <button type="submit">คำนวณ</button>
-</form>
+  <p class="course-label">Computer Programming for Electrical Engineers</p>
+</header>
 
-{% if results %}
-<section>
-  <h2>ผลลัพธ์</h2>
-  <table>
-    <thead>
-      <tr><th>ปริมาณ</th><th>ค่า</th></tr>
-    </thead>
-    <tbody>
-      {% for label, value in results %}
-      <tr><td>{{ label }}</td><td>{{ value }}</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p class="region">Region: <strong>{{ region }}</strong></p>
-  {% if warnings %}
-  <ul class="warnings">
-    {% for warning in warnings %}
-    <li>{{ warning }}</li>
-    {% endfor %}
-  </ul>
-  {% endif %}
-</section>
-{% endif %}
+<div class="layout">
+  <section class="card">
+    <h2>Input Parameters</h2>
+    <form method="post">
+      <div class="row">
+        <label for="vcc">V<sub>CC</sub> (Supply Voltage)</label>
+        <input id="vcc" name="vcc" type="text" inputmode="decimal" value="{{ values.get('vcc', '') }}">
+        <span class="unit">V</span>
+        <span class="error">{{ errors.get('vcc', '') }}</span>
+      </div>
+      <div class="row">
+        <label for="r1">R<sub>1</sub> (Upper Divider)</label>
+        <input id="r1" name="r1" type="text" inputmode="decimal" value="{{ values.get('r1', '') }}">
+        <span class="unit">Ω</span>
+        <span class="error">{{ errors.get('r1', '') }}</span>
+      </div>
+      <div class="row">
+        <label for="r2">R<sub>2</sub> (Lower Divider)</label>
+        <input id="r2" name="r2" type="text" inputmode="decimal" value="{{ values.get('r2', '') }}">
+        <span class="unit">Ω</span>
+        <span class="error">{{ errors.get('r2', '') }}</span>
+      </div>
+      <div class="row">
+        <label for="rc">R<sub>C</sub> (Collector Resistor)</label>
+        <input id="rc" name="rc" type="text" inputmode="decimal" value="{{ values.get('rc', '') }}">
+        <span class="unit">Ω</span>
+        <span class="error">{{ errors.get('rc', '') }}</span>
+      </div>
+      <div class="row">
+        <label for="re">R<sub>E</sub> (Emitter Resistor)</label>
+        <input id="re" name="re" type="text" inputmode="decimal" value="{{ values.get('re', '') }}">
+        <span class="unit">Ω</span>
+        <span class="error">{{ errors.get('re', '') }}</span>
+      </div>
+      <div class="row">
+        <label for="beta">β (Current Gain)</label>
+        <input id="beta" name="beta" type="text" inputmode="decimal" value="{{ values.get('beta', '') }}">
+        <span class="unit">–</span>
+        <span class="error">{{ errors.get('beta', '') }}</span>
+      </div>
+      <div class="row">
+        <label for="vbe">V<sub>BE</sub> (Base–Emitter Voltage)</label>
+        <input id="vbe" name="vbe" type="text" inputmode="decimal" value="{{ values.get('vbe', '') }}">
+        <span class="unit">V</span>
+        <span class="error">{{ errors.get('vbe', '') }}</span>
+      </div>
+      <p class="hint">กรอกค่าความต้านทานเป็น Ω (100 kΩ = 100000 Ω)</p>
+      <button type="submit">Calculate DC Bias</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Circuit: Common-Emitter Amplifier</h2>
+    <svg class="schematic" viewBox="0 0 320 340" role="img"
+         aria-label="Voltage-divider biased NPN common-emitter circuit">
+      <g class="wire" fill="none" stroke="#222" stroke-width="2">
+        <line x1="110" y1="40" x2="200" y2="40"/>
+        <line x1="110" y1="40" x2="110" y2="55"/>
+        <line x1="110" y1="115" x2="110" y2="175"/>
+        <line x1="110" y1="235" x2="110" y2="295"/>
+        <line x1="110" y1="175" x2="174" y2="175"/>
+        <line x1="200" y1="40" x2="200" y2="55"/>
+        <line x1="200" y1="115" x2="200" y2="152"/>
+        <line x1="200" y1="198" x2="200" y2="235"/>
+        <line x1="200" y1="295" x2="200" y2="315"/>
+        <line x1="110" y1="295" x2="110" y2="315"/>
+      </g>
+      <g class="resistor" fill="none" stroke="#222" stroke-width="2">
+        <polyline points="110,55 110,62 102,68 118,80 102,92 118,104 110,110 110,115"/>
+        <polyline points="110,235 110,242 102,248 118,260 102,272 118,284 110,290 110,295"/>
+        <polyline points="200,55 200,62 192,68 208,80 192,92 208,104 200,110 200,115"/>
+        <polyline points="200,235 200,242 192,248 208,260 192,272 208,284 200,290 200,295"/>
+      </g>
+      <g class="transistor" fill="none" stroke="#222" stroke-width="2">
+        <circle cx="184" cy="175" r="20"/>
+        <line x1="174" y1="163" x2="174" y2="187"/>
+        <line x1="174" y1="169" x2="200" y2="152"/>
+        <line x1="174" y1="181" x2="200" y2="198"/>
+        <polygon points="200,198 192,194 195,188" fill="#222"/>
+      </g>
+      <g class="ground" stroke="#222" stroke-width="2">
+        <line x1="98" y1="315" x2="122" y2="315"/>
+        <line x1="102" y1="320" x2="118" y2="320"/>
+        <line x1="106" y1="325" x2="114" y2="325"/>
+        <line x1="188" y1="315" x2="212" y2="315"/>
+        <line x1="192" y1="320" x2="208" y2="320"/>
+        <line x1="196" y1="325" x2="204" y2="325"/>
+      </g>
+      <g class="node" fill="#222">
+        <circle cx="200" cy="40" r="3"/>
+        <circle cx="110" cy="175" r="3"/>
+        <circle cx="200" cy="152" r="3"/>
+        <circle cx="200" cy="198" r="3"/>
+      </g>
+      <g class="labels" fill="#222" font-size="11">
+        <text x="200" y="24" text-anchor="middle">VCC = {{ schematic.vcc }}</text>
+        <text x="92" y="80" text-anchor="end">R1</text>
+        <text x="92" y="94" text-anchor="end">{{ schematic.r1 }}</text>
+        <text x="92" y="262" text-anchor="end">R2</text>
+        <text x="92" y="276" text-anchor="end">{{ schematic.r2 }}</text>
+        <text x="218" y="80">RC</text>
+        <text x="218" y="94">{{ schematic.rc }}</text>
+        <text x="218" y="262">RE</text>
+        <text x="218" y="276">{{ schematic.re }}</text>
+        <text x="218" y="172">Q1</text>
+        <text x="218" y="186">NPN</text>
+        <text x="218" y="200">β = {{ schematic.beta }}</text>
+      </g>
+    </svg>
+  </section>
+
+  <section class="card">
+    <h2>DC Bias Results</h2>
+    {% if results %}
+    <table class="results-table">
+      <tbody>
+        {% for label, value in results %}
+        <tr><th>{{ label }}</th><td>{{ value }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="badge badge-{{ region }}">
+      {% if region == 'active' %}
+      <strong>Active region approximation OK</strong>
+      <span>VCE = {{ vce_display }} &gt; 0.3 V (transistor in active region)</span>
+      {% elif region == 'saturation' %}
+      <strong>Saturation</strong>
+      <span>VCE = {{ vce_display }} ≤ 0.3 V</span>
+      {% elif region == 'cutoff' %}
+      <strong>Cutoff</strong>
+      <span>VTH ≤ VBE, IB ≈ 0</span>
+      {% else %}
+      <strong>Invalid result</strong>
+      <span>ตรวจสอบค่าอินพุต</span>
+      {% endif %}
+    </div>
+    {% if warnings %}
+    <ul class="warnings">
+      {% for warning in warnings %}<li>{{ warning }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% else %}
+    <p class="hint">กด Calculate DC Bias เพื่อคำนวณจุดทำงาน</p>
+    {% endif %}
+  </section>
+</div>
 
 {% if comparison %}
-<section>
+<section class="card wide">
   <h2>ตรวจสอบด้วยวิธีอิสระ (Nodal)</h2>
   <table>
     <thead>
@@ -85,9 +177,16 @@
   <p class="caption">การตรวจนี้ยืนยันว่าสองวิธีคำนวณได้คำตอบเดียวกัน ไม่ได้ยืนยันว่าทรานซิสเตอร์อยู่ในช่วงที่แบบจำลองใช้ได้</p>
 </section>
 {% elif region == 'cutoff' %}
-<section>
+<section class="card wide">
   <h2>ตรวจสอบด้วยวิธีอิสระ (Nodal)</h2>
   <p>n/a — transistor off</p>
 </section>
 {% endif %}
+
+<footer class="goal">
+  <strong>Week 2 Goal</strong>
+  <p>Build a Flask web app that takes the circuit parameters, computes the BJT DC
+  bias (VB, VE, VC, VCE, IB, IC, IE) for a common-emitter amplifier with
+  voltage-divider bias, and displays the results.</p>
+</footer>
 {% endblock %}

@@ -9,11 +9,11 @@ app = Flask(__name__)
 
 DEFAULTS = {
     "vcc": "12",
-    "r1": "47000",
-    "r2": "10000",
-    "rc": "4700",
+    "r1": "100000",
+    "r2": "22000",
+    "rc": "2200",
     "re": "1000",
-    "beta": "150",
+    "beta": "100",
     "vbe": "0.7",
 }
 
@@ -29,11 +29,39 @@ RESULT_LABELS = (
 
 
 def _format_current(amps: float) -> str:
-    return f"{amps * 1000:.4g} mA"
+    milliamps = amps * 1000
+    if abs(milliamps) < 1:
+        return f"{amps * 1_000_000:.4g} µA"
+    return f"{milliamps:.4g} mA"
 
 
 def _format_voltage(volts: float) -> str:
     return f"{volts:.4g} V"
+
+
+def _format_resistance(ohms: float) -> str:
+    if abs(ohms) >= 1000:
+        return f"{ohms / 1000:.4g} kΩ"
+    return f"{ohms:.4g} Ω"
+
+
+def _schematic(values) -> dict[str, str]:
+    """Labels for the circuit diagram; falls back to defaults on bad input."""
+
+    def number(key: str, fallback: float) -> float:
+        try:
+            return float(str(values.get(key, fallback)).strip())
+        except (TypeError, ValueError):
+            return fallback
+
+    return {
+        "vcc": f"{number('vcc', 12):.4g} V",
+        "r1": _format_resistance(number("r1", 100000)),
+        "r2": _format_resistance(number("r2", 22000)),
+        "rc": _format_resistance(number("rc", 2200)),
+        "re": _format_resistance(number("re", 1000)),
+        "beta": f"{number('beta', 100):.4g}",
+    }
 
 
 COMPARISON = (
@@ -70,11 +98,18 @@ def _compare(closed: dict, nodal: dict | None) -> list[dict] | None:
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
-        return render_template("index.html", values=DEFAULTS, errors={})
+        return render_template(
+            "index.html", values=DEFAULTS, errors={}, schematic=_schematic(DEFAULTS)
+        )
 
     inputs, errors = validate(request.form)
     if errors:
-        return render_template("index.html", values=request.form, errors=errors)
+        return render_template(
+            "index.html",
+            values=request.form,
+            errors=errors,
+            schematic=_schematic(request.form),
+        )
 
     op = operating_point(inputs)
     region, warnings = classify(op)
@@ -91,6 +126,8 @@ def index():
         region=region,
         warnings=warnings,
         comparison=_compare(op, independent),
+        vce_display=_format_voltage(op["vce"]),
+        schematic=_schematic(request.form),
     )
 
 
