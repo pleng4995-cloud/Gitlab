@@ -111,10 +111,14 @@ class TestLabReference(unittest.TestCase):
 
     def test_schematic_falls_back_on_non_finite_and_non_positive_values(self):
         for bad in ("nan", "inf", "1e400", "-100", "0"):
-            labels = _schematic({"vcc": bad, "r1": bad, "rc": bad})
+            labels = _schematic({"vcc": bad, "r1": bad, "r2": bad,
+                                 "rc": bad, "re": bad, "beta": bad})
             self.assertEqual(labels["vcc"], "12 V", bad)
             self.assertEqual(labels["r1"], "100 kΩ", bad)
+            self.assertEqual(labels["r2"], "22 kΩ", bad)
             self.assertEqual(labels["rc"], "2.2 kΩ", bad)
+            self.assertEqual(labels["re"], "1 kΩ", bad)
+            self.assertEqual(labels["beta"], "100", bad)
             self.assertTrue(labels["fallback"], bad)
 
     def test_schematic_uses_typed_values_when_they_are_valid(self):
