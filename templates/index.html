@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post">
+  <div class="field">
+    <label for="vcc">VCC (V)</label>
+    <input id="vcc" name="vcc" type="text" inputmode="decimal" value="{{ values['vcc'] }}">
+    <span class="error">{{ errors.get('vcc', '') }}</span>
+  </div>
+  <div class="field">
+    <label for="r1">R1 (Ω)</label>
+    <input id="r1" name="r1" type="text" inputmode="decimal" value="{{ values['r1'] }}">
+    <span class="error">{{ errors.get('r1', '') }}</span>
+  </div>
+  <div class="field">
+    <label for="r2">R2 (Ω)</label>
+    <input id="r2" name="r2" type="text" inputmode="decimal" value="{{ values['r2'] }}">
+    <span class="error">{{ errors.get('r2', '') }}</span>
+  </div>
+  <div class="field">
+    <label for="rc">RC (Ω)</label>
+    <input id="rc" name="rc" type="text" inputmode="decimal" value="{{ values['rc'] }}">
+    <span class="error">{{ errors.get('rc', '') }}</span>
+  </div>
+  <div class="field">
+    <label for="re">RE (Ω)</label>
+    <input id="re" name="re" type="text" inputmode="decimal" value="{{ values['re'] }}">
+    <span class="error">{{ errors.get('re', '') }}</span>
+  </div>
+  <div class="field">
+    <label for="beta">β</label>
+    <input id="beta" name="beta" type="text" inputmode="decimal" value="{{ values['beta'] }}">
+    <span class="error">{{ errors.get('beta', '') }}</span>
+  </div>
+  <div class="field">
+    <label for="vbe">VBE (V)</label>
+    <input id="vbe" name="vbe" type="text" inputmode="decimal" value="{{ values['vbe'] }}">
+    <span class="error">{{ errors.get('vbe', '') }}</span>
+  </div>
+  <button type="submit">คำนวณ</button>
+</form>
+{% endblock %}

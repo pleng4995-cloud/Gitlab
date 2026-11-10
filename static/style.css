@@ -1,0 +1,71 @@
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  color: #222;
+  background: #fff;
+  margin: 0;
+  padding: 2rem 1rem;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: 8rem 1fr;
+  gap: 0.25rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+label {
+  padding-top: 0.25rem;
+}
+
+input {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #999;
+  border-radius: 4px;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.error {
+  grid-column: 2;
+  color: #b00020;
+  font-size: 0.85rem;
+}
+
+button {
+  margin-top: 0.5rem;
+  padding: 0.45rem 1.2rem;
+  font: inherit;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 0.3rem 0.6rem;
+  text-align: left;
+}
+
+th {
+  background: #f2f2f2;
+  font-weight: 600;
+}
