@@ -188,6 +188,9 @@ explanations.
 - Inputs are always in Ω. The schematic converts for display
   (`100000` → `100 kΩ`) with `_format_resistance`, so the kΩ on the lab sheet and
   the Ω in the form never drift apart.
+- On an error re-render the schematic substitutes the lab default for any value
+  validation rejected (missing, non-numeric, non-finite, or not positive) and
+  shows a note saying so, so the diagram never draws an impossible component.
 - All labels are tied to inputs; error text sits beside the field. No JavaScript.
 
 ### 8.7 Page layout
@@ -207,7 +210,7 @@ explanations.
 ## 9. Testing
 
 - **Hand-worked reference** (derived by hand algebra, independent of both code
-  paths), defaults `VCC=12, R1=47000, R2=10000, RC=4700, RE=1000, beta=150,
+  paths), test fixture `VCC=12, R1=47000, R2=10000, RC=4700, RE=1000, beta=150,
   VBE=0.7`, stored to full precision so the tolerance is not fighting rounding:
 
   ```
@@ -234,9 +237,12 @@ explanations.
 - `test_params.py`: blank, text, zero, negative, `NaN`/`inf`, `beta <= 0`,
   `VBE >= VCC` all rejected with the right field key; valid input accepted.
 - `test_routes.py`: `GET /` is 200 and contains all seven input names;
-  valid `POST /` is 200 and shows mA values and the region; invalid `POST /` is
-  200 with an error message and the typed value still present.
-- Target ≈ 20 tests, all green before commit.
+  valid `POST /` is 200 and shows values with units and the region; invalid
+  `POST /` is 200 with an error message and the typed value still present;
+  the lab reference values, the kΩ schematic labels, the schematic fallback on
+  non-finite/non-positive input, the µA/mA boundary, and the badge thresholds.
+- Target ≥ 40 tests in `tests/`, all green before commit, plus the five legacy
+  `test_electrical.py` tests.
 
 ## 10. Delivery
 
@@ -250,16 +256,16 @@ explanations.
 
 | # | Criterion | How it is checked |
 |---|-----------|-------------------|
-| 1 | `python -m unittest discover -s tests` passes, ≥ 20 tests | real run, raw output shown |
+| 1 | `python -m unittest discover -s tests` passes, ≥ 40 tests | real run, raw output shown |
 | 2 | At least one test compares the two methods | `tests/test_nodal.py` |
-| 3 | Changing `VCC` 12 → 24 changes the result proportionally | two browser runs |
-| 4 | Defaults give `VCE ≈ 4.446 V`, `IC ≈ 1.324 mA`, region active | `http://127.0.0.1:5000` |
+| 3 | Changing `VCC` 12 → 24 changes the result | automated route test + live POST |
+| 4 | Lab defaults give `VCE ≈ 8.052 V`, `IC ≈ 1.23 mA`, `IB ≈ 12.3 µA`, region active; the 47000 Ω fixture gives `VCE ≈ 4.446 V`, `IC ≈ 1.324 mA` | `http://127.0.0.1:5000` and tests |
 | 5 | `R1=0`, `beta=-5`, `VBE=15`, blank → Thai per-field error, values kept | typed by hand |
 | 6 | Saturation and cutoff cases show the right warning | typed by hand |
 | 7 | Cross-check panel shows both columns, Δ, and OK | on screen |
 | 8 | `python app.py` serves `127.0.0.1:5000` | real run |
 | 9 | Commit exists on GitHub | `git log` + repo page |
-| 10 | No AC/Bode/transient/function generator/decorative UI | file list + grep for forbidden terms |
+| 10 | No AC/Bode/transient/function generator/oscilloscope; no images, JavaScript, or icon libraries (layout follows the approved lab mock-up) | file list + grep for forbidden terms |
 | 11 | `electrical.py` and its tests still pass | run the old test file |
 
 ## 12. Left to the builder

@@ -1,3 +1,5 @@
+import math
+
 from flask import Flask, render_template, request
 
 from bjt_bias.nodal import nodal_operating_point
@@ -29,10 +31,12 @@ RESULT_LABELS = (
 
 
 def _format_current(amps: float) -> str:
-    milliamps = amps * 1000
-    if abs(milliamps) < 1:
-        return f"{amps * 1_000_000:.4g} µA"
-    return f"{milliamps:.4g} mA"
+    microamps = amps * 1_000_000
+    # Use µA only while 4 significant figures stay below 1000, so a value such
+    # as 0.99995 mA prints "1 mA" instead of the nonsensical "1000 µA".
+    if abs(float(f"{microamps:.4g}")) < 1000:
+        return f"{microamps:.4g} µA"
+    return f"{amps * 1000:.4g} mA"
 
 
 def _format_voltage(volts: float) -> str:
@@ -45,23 +49,37 @@ def _format_resistance(ohms: float) -> str:
     return f"{ohms:.4g} Ω"
 
 
-def _schematic(values) -> dict[str, str]:
-    """Labels for the circuit diagram; falls back to defaults on bad input."""
+def _schematic(values) -> dict[str, object]:
+    """Labels for the circuit diagram.
+
+    A value that validation would reject (missing, non-numeric, non-finite, or
+    not positive) falls back to the lab default, so the diagram never draws a
+    component that cannot exist. ``fallback`` tells the template to say so.
+    """
+    fallback_used = False
 
     def number(key: str, fallback: float) -> float:
+        nonlocal fallback_used
         try:
-            return float(str(values.get(key, fallback)).strip())
+            value = float(str(values.get(key)).strip())
         except (TypeError, ValueError):
+            fallback_used = True
             return fallback
+        if not math.isfinite(value) or value <= 0:
+            fallback_used = True
+            return fallback
+        return value
 
-    return {
+    labels = {
         "vcc": f"{number('vcc', 12):.4g} V",
         "r1": _format_resistance(number("r1", 100000)),
         "r2": _format_resistance(number("r2", 22000)),
         "rc": _format_resistance(number("rc", 2200)),
         "re": _format_resistance(number("re", 1000)),
         "beta": f"{number('beta', 100):.4g}",
+        "fallback": fallback_used,
     }
+    return labels
 
 
 COMPARISON = (

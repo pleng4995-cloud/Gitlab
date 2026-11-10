@@ -8,7 +8,10 @@ CAVEAT = (
     "ผลนี้มาจาก forward-active approximation (β และ VBE คงที่) "
     "ไม่ใช่ผลจำลองที่แม่นยำ"
 )
-WARNING_CUTOFF = "ทรานซิสเตอร์อยู่ในช่วง cutoff (VTH ≤ VBE, IB ≈ 0) — " + CAVEAT
+WARNING_CUTOFF = (
+    "ทรานซิสเตอร์อยู่ในช่วง cutoff (VTH ≤ VBE คือแรงดันจากตัวแบ่ง R1/R2 "
+    "ที่ base ต่ำกว่า VBE, IB ≈ 0) — " + CAVEAT
+)
 WARNING_SATURATION = (
     "ทรานซิสเตอร์อยู่ในช่วง saturation (VCE < 0.3 V) "
     "ค่า Q-point ใช้เป็นแอมพลิฟายเออร์ไม่ได้ — " + CAVEAT

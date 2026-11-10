@@ -1,6 +1,6 @@
 import unittest
 
-from app import _format_resistance, _schematic, app
+from app import _format_current, _format_resistance, _schematic, app
 
 VALID = {"vcc": "12", "r1": "47000", "r2": "10000", "rc": "4700",
          "re": "1000", "beta": "150", "vbe": "0.7"}
@@ -87,8 +87,9 @@ class TestLabReference(unittest.TestCase):
 
     def test_lab_values_match_independent_reference(self):
         body = self.client.post("/", data=LAB).get_data(as_text=True)
-        for expected in ("1.942", "1.242", "9.294", "8.052", "12.3", "1.23"):
-            self.assertIn(expected, body)
+        for expected in ("1.942 V", "1.242 V", "9.294 V", "8.052 V",
+                         "12.3 µA", "1.23 mA", "1.242 mA"):
+            self.assertIn(expected, body, expected)
 
     def test_resistance_is_displayed_in_kohm(self):
         self.assertEqual(_format_resistance(100000), "100 kΩ")
@@ -106,6 +107,35 @@ class TestLabReference(unittest.TestCase):
         self.assertEqual(labels["vcc"], "12 V")
         self.assertEqual(labels["r1"], "100 kΩ")
         self.assertEqual(labels["beta"], "100")
+        self.assertTrue(labels["fallback"])
+
+    def test_schematic_falls_back_on_non_finite_and_non_positive_values(self):
+        for bad in ("nan", "inf", "1e400", "-100", "0"):
+            labels = _schematic({"vcc": bad, "r1": bad, "rc": bad})
+            self.assertEqual(labels["vcc"], "12 V", bad)
+            self.assertEqual(labels["r1"], "100 kΩ", bad)
+            self.assertEqual(labels["rc"], "2.2 kΩ", bad)
+            self.assertTrue(labels["fallback"], bad)
+
+    def test_schematic_uses_typed_values_when_they_are_valid(self):
+        labels = _schematic({"vcc": "24", "r1": "47000", "r2": "10000",
+                             "rc": "4700", "re": "1000", "beta": "150"})
+        self.assertEqual(labels["vcc"], "24 V")
+        self.assertEqual(labels["r1"], "47 kΩ")
+        self.assertFalse(labels["fallback"])
+
+    def test_current_formatter_does_not_show_1000_microamps(self):
+        self.assertEqual(_format_current(0.99995e-3), "1 mA")
+        self.assertEqual(_format_current(0.999e-3), "999 µA")
+        self.assertEqual(_format_current(1e-3), "1 mA")
+
+    def test_active_badge_states_the_correct_threshold(self):
+        body = self.client.post("/", data=LAB).get_data(as_text=True)
+        self.assertIn("≥ 0.3 V", body)
+
+    def test_saturation_badge_states_the_correct_threshold(self):
+        body = self.client.post("/", data={**LAB, "rc": "47000"}).get_data(as_text=True)
+        self.assertIn("ต่ำกว่า 0.3 V", body)
 
     def test_saturation_warning_states_the_approximation(self):
         body = self.client.post("/", data={**LAB, "rc": "47000"}).get_data(as_text=True)

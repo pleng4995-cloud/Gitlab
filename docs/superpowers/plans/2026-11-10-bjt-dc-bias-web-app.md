@@ -10,6 +10,18 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-10-bjt-dc-bias-web-app-design.md`
 
+## Amendment 2026-11-10 (after execution)
+
+The student asked for the UI to follow the lab mock-up, so the binding spec was
+amended (design §3, §8.6, §8.7) to allow a three-column layout, an inline SVG
+schematic, and a region badge — still no images, JavaScript, icon libraries, or
+circuit editor. Option B was chosen: layout and colours only, fixed units, no
+unit dropdowns. The app defaults also moved to the lab values
+(`100000/22000/2200/1000/beta=100/VBE=0.7`), the schematic displays kΩ, and
+cutoff/saturation warnings now carry the forward-active-approximation caveat.
+Code snippets in Tasks 5, 6 and 8 below show the pre-amendment state; the
+authoritative behaviour is the amended design document.
+
 ## Global Constraints
 
 - Python 3.10.11 (`python`), Flask pinned in `requirements.txt`; no NumPy, no JS, no build step.

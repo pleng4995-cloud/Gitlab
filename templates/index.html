@@ -117,6 +117,9 @@
         <text x="218" y="200">β = {{ schematic.beta }}</text>
       </g>
     </svg>
+    {% if schematic.fallback %}
+    <p class="hint">ค่าที่ไม่ถูกต้องจะแสดงเป็นค่าเริ่มต้นในภาพวงจร</p>
+    {% endif %}
   </section>
 
   <section class="card">
@@ -132,13 +135,13 @@
     <div class="badge badge-{{ region }}">
       {% if region == 'active' %}
       <strong>Active region approximation OK</strong>
-      <span>VCE = {{ vce_display }} &gt; 0.3 V (transistor in active region)</span>
+      <span>VCE = {{ vce_display }} ≥ 0.3 V (transistor in active region)</span>
       {% elif region == 'saturation' %}
       <strong>Saturation</strong>
-      <span>VCE = {{ vce_display }} ≤ 0.3 V</span>
+      <span>VCE = {{ vce_display }} ต่ำกว่า 0.3 V</span>
       {% elif region == 'cutoff' %}
       <strong>Cutoff</strong>
-      <span>VTH ≤ VBE, IB ≈ 0</span>
+      <span>VTH ≤ VBE (แรงดัน divider ที่ base), IB ≈ 0</span>
       {% else %}
       <strong>Invalid result</strong>
       <span>ตรวจสอบค่าอินพุต</span>
