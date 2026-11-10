@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 
+from bjt_bias.nodal import nodal_operating_point
 from bjt_bias.operating_point import operating_point
 from bjt_bias.params import validate
 from bjt_bias.regions import classify
@@ -35,6 +36,37 @@ def _format_voltage(volts: float) -> str:
     return f"{volts:.4g} V"
 
 
+COMPARISON = (
+    ("vb", "VB", "V", 1e-6),
+    ("vc", "VC", "V", 1e-6),
+    ("ve", "VE", "V", 1e-6),
+    ("ib", "IB", "A", 1e-9),
+    ("ic", "IC", "A", 1e-9),
+    ("ie", "IE", "A", 1e-9),
+    ("vce", "VCE", "V", 1e-6),
+)
+
+
+def _compare(closed: dict, nodal: dict | None) -> list[dict] | None:
+    """Pair the two methods quantity by quantity, or None when off."""
+    if nodal is None:
+        return None
+    rows = []
+    for key, label, unit, tolerance in COMPARISON:
+        primary = closed[key]
+        independent = nodal[key]
+        difference = abs(primary - independent)
+        rows.append({
+            "name": label,
+            "unit": unit,
+            "primary": f"{primary:.6g}",
+            "independent": f"{independent:.6g}",
+            "delta": f"{difference:.1e}",
+            "ok": difference <= tolerance,
+        })
+    return rows
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "GET":
@@ -50,6 +82,7 @@ def index():
         (label, (_format_voltage if kind == "voltage" else _format_current)(op[key]))
         for key, label, kind in RESULT_LABELS
     ]
+    independent = None if region == "cutoff" else nodal_operating_point(inputs)
     return render_template(
         "index.html",
         values=request.form,
@@ -57,6 +90,7 @@ def index():
         results=results,
         region=region,
         warnings=warnings,
+        comparison=_compare(op, independent),
     )
 
 

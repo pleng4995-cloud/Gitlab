@@ -62,4 +62,32 @@
   {% endif %}
 </section>
 {% endif %}
+
+{% if comparison %}
+<section>
+  <h2>ตรวจสอบด้วยวิธีอิสระ (Nodal)</h2>
+  <table>
+    <thead>
+      <tr><th>ปริมาณ</th><th>สูตรมาตรฐาน</th><th>Nodal</th><th>Δ</th><th>ผล</th></tr>
+    </thead>
+    <tbody>
+      {% for row in comparison %}
+      <tr>
+        <td>{{ row.name }}</td>
+        <td>{{ row.primary }} {{ row.unit }}</td>
+        <td>{{ row.independent }} {{ row.unit }}</td>
+        <td>Δ {{ row.delta }} {{ row.unit }}</td>
+        <td>{{ 'OK' if row.ok else 'MISMATCH' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="caption">การตรวจนี้ยืนยันว่าสองวิธีคำนวณได้คำตอบเดียวกัน ไม่ได้ยืนยันว่าทรานซิสเตอร์อยู่ในช่วงที่แบบจำลองใช้ได้</p>
+</section>
+{% elif region == 'cutoff' %}
+<section>
+  <h2>ตรวจสอบด้วยวิธีอิสระ (Nodal)</h2>
+  <p>n/a — transistor off</p>
+</section>
+{% endif %}
 {% endblock %}
